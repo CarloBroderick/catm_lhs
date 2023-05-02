@@ -1,0 +1,124 @@
+---
+title: "R Notebook"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r packages}
+# packages
+library(sensitivity)
+library(tidyverse)
+library(lhs)
+library(purrr)
+```
+
+**Your task**\
+For a given forest, you will perform a sensitivity analysis of model predictions of conductance. Consider the sensitivity of your estimate to uncertainty in the following parameters and inputs
+
+• height\
+• kd\
+• k0\
+• v
+
+Windspeeds v are normally distributed with a mean of 250 cm/s with a standard deviation of 30 cm/s\
+For vegetation height assume that height is somewhere between 9.5 and 10.5 m (but any value in that range is equally likely)\
+For the kd and k0 parameters you can assume that they are normally distributed with standard deviation of 1% of their default values\
+\
+a) Use the Latin hypercube approach to generate parameter values for the 4 parameters\
+b) Run the atmospheric conductance model for these parameters\
+c) Plot conductance estimates in a way that accounts for parameter uncertainty 1\
+d) Plot conductance estimates against each of your parameters\
+e) Estimate the Partial Rank Correlation Coefficients\
+f) Discuss what\
+\
+It looks like wind speed and height are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot.
+
+```{r LHS}
+# source the function
+source("Catm-1.R")
+
+# set a random seed to make things 'random'
+set.seed(2)
+
+# specify parameters
+pnames = c("v", "height","k_o", "k_d")
+
+# how many parameters
+npar =  length(pnames)
+               
+# how many samples
+nsample = 50
+
+# create the random values array matrix using LHS for the parameters
+parm_quant = randomLHS(nsample, npar)
+
+# assign the parameter names columns
+colnames(parm_quant)=pnames
+
+# make a data frame
+parm = as.data.frame(matrix(nrow=nrow(parm_quant), ncol=ncol(parm_quant)))
+
+# name columns
+colnames(parm) = pnames
+
+# create the samples for the different perameters
+
+# to create the 1% sdeviation
+pvar = 100
+
+# normal
+parm[,"v"] = qnorm(parm_quant[,"v"], mean=250, sd=30)
+parm[,"k_d"] = qnorm(parm_quant[,"k_d"], mean=0.7, sd=0.7/pvar)
+parm[,"k_o"] = qnorm(parm_quant[,"k_o"], mean=0.1, sd=0.1/pvar)
+
+# uniform
+parm[,"height"] = qunif(parm_quant[,"height"], min = 9.5, max = 10.5)
+```
+
+```{r}
+# run the hypercube through the model
+Ca_outputs = pmap(parm, Catm)
+
+# turn results in to a aray for easy display/analysis
+Cas = unlist(Ca_outputs)
+
+# put the outputs in the same df as the parameters
+param_outputs <- parm |>
+  mutate(output = Cas)
+```
+
+```{r}
+
+# plot predicted Ca for each perameter combo
+ggplot(param_outputs, aes(x = output)) +
+  geom_density(color = "navy", size = 1.5, fill = "lightblue") +
+  theme_minimal() +
+  labs(x = "Output Value", y = "Density", title = "Ca Model Output Value")
+
+# cumulative distribution
+ggplot(param_outputs, aes(x = output)) +
+  stat_ecdf(color = "navy", size = 1.5) +
+  theme_minimal() +
+  labs(x = "Output Value", y = "Cumulative Probability", title = "Ca Model Output Cumulative Probability")
+
+# make a df for the outputs pivot longer for graphs
+df_long <- param_outputs %>% 
+  pivot_longer(cols = v:k_d, names_to = "parm", values_to = "value")
+
+# Create plots for parameters effect on output
+ggplot(df_long, aes(x = value, y = output, col = parm)) +
+  geom_point(size = 1.5) +
+  facet_wrap(~ parm, ncol = 2, scales = "free") +
+  theme_minimal() +
+  labs(x = "Value", y = "Output", color = "Parameter", title = "Ca Model Output by Parameter")
+```
+
+```{r}
+# calculate partial corelations
+partial_correlation = pcc(parm, param_outputs$output, rank = TRUE)
+
+plot(partial_correlation)
+```
+
+\
