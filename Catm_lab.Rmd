@@ -66,7 +66,7 @@ parm = as.data.frame(matrix(nrow=nrow(parm_quant), ncol=ncol(parm_quant)))
 # name columns
 colnames(parm) = pnames
 
-# create the samples for the different perameters
+# create the samples for the different parameters
 
 # to create the 1% sdeviation
 pvar = 100
@@ -94,7 +94,7 @@ param_outputs <- parm |>
 
 ```{r}
 
-# plot predicted Ca for each perameter combo
+# plot predicted Ca for each parameter combo
 ggplot(param_outputs, aes(x = output)) +
   geom_density(color = "navy", size = 1.5, fill = "lightblue") +
   theme_minimal() +
@@ -119,7 +119,7 @@ ggplot(df_long, aes(x = value, y = output, col = parm)) +
 ```
 
 ```{r}
-# calculate partial corelations
+# calculate partial correlations
 partial_correlation = pcc(parm, param_outputs$output, rank = TRUE)
 
 plot(partial_correlation)
