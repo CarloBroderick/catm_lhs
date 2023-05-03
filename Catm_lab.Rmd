@@ -1,7 +1,9 @@
 ---
 title: "R Notebook"
-output: html_notebook
-editor_options: 
+output:
+  html_notebook: default
+  pdf_document: default
+editor_options:
   chunk_output_type: inline
 ---
 
@@ -30,7 +32,9 @@ b) Run the atmospheric conductance model for these parameters\
 c) Plot conductance estimates in a way that accounts for parameter uncertainty 1\
 d) Plot conductance estimates against each of your parameters\
 e) Estimate the Partial Rank Correlation Coefficients\
-f) Discuss what\
+f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about
+what you should focus on if you want to reduce uncertainty in aerodymaic conductance estimates?
+Does this tell you anything about the sensitivity of plant water use to climate change?\
 \
 It looks like wind speed and height are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot.
 
