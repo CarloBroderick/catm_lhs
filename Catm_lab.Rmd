@@ -1,8 +1,9 @@
 ---
-title: "R Notebook"
+title: "EDS230: Assignment 4"
+author: Carlo Broderick, Erika Egg, Ruth Enriquez
 output:
-  html_notebook: default
   pdf_document: default
+  html_notebook: default
 editor_options:
   chunk_output_type: inline
 ---
@@ -32,11 +33,9 @@ b) Run the atmospheric conductance model for these parameters\
 c) Plot conductance estimates in a way that accounts for parameter uncertainty 1\
 d) Plot conductance estimates against each of your parameters\
 e) Estimate the Partial Rank Correlation Coefficients\
-f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about
-what you should focus on if you want to reduce uncertainty in aerodymaic conductance estimates?
-Does this tell you anything about the sensitivity of plant water use to climate change?\
+f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about what you should focus on if you want to reduce uncertainty in aerodynamic conductance estimates? Does this tell you anything about the sensitivity of plant water use to climate change?\
 \
-It looks like wind speed and height are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot.
+We suggest to reduce uncertainty that we look at wind speed and height, as they are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot. Since wind speed and height seem to be most sensitive to change, uncertainty in these parameters may be more likely to create an underestimate or overestimate of plant water use under climate change.
 
 ```{r LHS}
 # source the function
@@ -84,7 +83,7 @@ parm[,"height"] = qunif(parm_quant[,"height"], min = 9.5, max = 10.5)
 # run the hypercube through the model
 Ca_outputs = pmap(parm, Catm)
 
-# turn results in to a aray for easy display/analysis
+# turn results in to a array for easy display/analysis
 Cas = unlist(Ca_outputs)
 
 # put the outputs in the same df as the parameters
@@ -98,13 +97,13 @@ param_outputs <- parm |>
 ggplot(param_outputs, aes(x = output)) +
   geom_density(color = "navy", size = 1.5, fill = "lightblue") +
   theme_minimal() +
-  labs(x = "Output Value", y = "Density", title = "Ca Model Output Value")
+  labs(x = "Conductance (mm/s)", y = "Density", title = "Ca Model Conductance (mm/s)")
 
 # cumulative distribution
 ggplot(param_outputs, aes(x = output)) +
   stat_ecdf(color = "navy", size = 1.5) +
   theme_minimal() +
-  labs(x = "Output Value", y = "Cumulative Probability", title = "Ca Model Output Cumulative Probability")
+  labs(x = "Conductance (mm/s)", y = "Cumulative Probability", title = "Ca Model Output (Conductance (mm/s)) Cumulative Probability")
 
 # make a df for the outputs pivot longer for graphs
 df_long <- param_outputs %>% 
@@ -115,7 +114,7 @@ ggplot(df_long, aes(x = value, y = output, col = parm)) +
   geom_point(size = 1.5) +
   facet_wrap(~ parm, ncol = 2, scales = "free") +
   theme_minimal() +
-  labs(x = "Value", y = "Output", color = "Parameter", title = "Ca Model Output by Parameter")
+  labs(x = "Parameter", y = "Conductance (mm/s)", color = "Parameter", title = "Ca Model Output (Conductance (mm/s)) by Parameter")
 ```
 
 ```{r}
