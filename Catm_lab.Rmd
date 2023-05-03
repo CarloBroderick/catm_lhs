@@ -8,15 +8,15 @@ editor_options:
   chunk_output_type: inline
 ---
 
-```{r packages}
-# packages
+```{r packages, message = FALSE}
+# Load packages
 library(sensitivity)
 library(tidyverse)
 library(lhs)
 library(purrr)
 ```
 
-**Your task**\
+**Assignment Tasks**\
 For a given forest, you will perform a sensitivity analysis of model predictions of conductance. Consider the sensitivity of your estimate to uncertainty in the following parameters and inputs
 
 • height\
@@ -28,100 +28,134 @@ Windspeeds v are normally distributed with a mean of 250 cm/s with a standard de
 For vegetation height assume that height is somewhere between 9.5 and 10.5 m (but any value in that range is equally likely)\
 For the kd and k0 parameters you can assume that they are normally distributed with standard deviation of 1% of their default values\
 \
-a) Use the Latin hypercube approach to generate parameter values for the 4 parameters\
-b) Run the atmospheric conductance model for these parameters\
-c) Plot conductance estimates in a way that accounts for parameter uncertainty 1\
-d) Plot conductance estimates against each of your parameters\
-e) Estimate the Partial Rank Correlation Coefficients\
-f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about what you should focus on if you want to reduce uncertainty in aerodynamic conductance estimates? Does this tell you anything about the sensitivity of plant water use to climate change?\
-\
-We suggest to reduce uncertainty that we look at wind speed and height, as they are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot. Since wind speed and height seem to be most sensitive to change, uncertainty in these parameters may be more likely to create an underestimate or overestimate of plant water use under climate change.
-
-```{r LHS}
-# source the function
+```{r}
+# Source the function
 source("Catm-1.R")
-
-# set a random seed to make things 'random'
-set.seed(2)
-
-# specify parameters
-pnames = c("v", "height","k_o", "k_d")
-
-# how many parameters
-npar =  length(pnames)
-               
-# how many samples
-nsample = 50
-
-# create the random values array matrix using LHS for the parameters
-parm_quant = randomLHS(nsample, npar)
-
-# assign the parameter names columns
-colnames(parm_quant)=pnames
-
-# make a data frame
-parm = as.data.frame(matrix(nrow=nrow(parm_quant), ncol=ncol(parm_quant)))
-
-# name columns
-colnames(parm) = pnames
-
-# create the samples for the different parameters
-
-# to create the 1% sdeviation
-pvar = 100
-
-# normal
-parm[,"v"] = qnorm(parm_quant[,"v"], mean=250, sd=30)
-parm[,"k_d"] = qnorm(parm_quant[,"k_d"], mean=0.7, sd=0.7/pvar)
-parm[,"k_o"] = qnorm(parm_quant[,"k_o"], mean=0.1, sd=0.1/pvar)
-
-# uniform
-parm[,"height"] = qunif(parm_quant[,"height"], min = 9.5, max = 10.5)
 ```
 
+a) Use the Latin hypercube approach to generate parameter values for the 4 parameters\
+
 ```{r}
-# run the hypercube through the model
+# Set a random seed to make things 'random' reproducibly
+set.seed(2)
+
+# Specify parameters
+pnames = c("v", "height", "k_o", "k_d")
+
+# Gather how many parameters
+npar =  length(pnames)
+               
+# Choose how many samples
+nsample = 50
+
+# Create the random values array matrix using LHS for the parameters
+parm_quant = randomLHS(nsample, npar)
+
+# Assign the parameter names columns
+colnames(parm_quant) = pnames
+
+# Set up a data frame
+parm = as.data.frame(matrix(nrow = nrow(parm_quant), 
+                            ncol = ncol(parm_quant)))
+
+# Name data frame columns
+colnames(parm) = pnames
+
+# Create the samples for the different parameters
+
+# To create the 1% standard deviation in next step
+pvar = 100
+
+# Normally distributed param samples
+parm[,"v"] = qnorm(parm_quant[,"v"], 
+                   mean = 250, 
+                   sd = 30)
+parm[,"k_d"] = qnorm(parm_quant[,"k_d"], 
+                     mean = 0.7, 
+                     sd = 0.7/pvar)
+parm[,"k_o"] = qnorm(parm_quant[,"k_o"], 
+                     mean = 0.1, 
+                     sd = 0.1/pvar)
+
+# Uniformly distributed param samples
+parm[,"height"] = qunif(parm_quant[,"height"], 
+                        min = 9.5, 
+                        max = 10.5)
+```
+
+b) Run the atmospheric conductance model for these parameters\
+
+```{r}
+# Run the hypercube through the model
 Ca_outputs = pmap(parm, Catm)
 
-# turn results in to a array for easy display/analysis
+# Turn results into an array for easy display/analysis
 Cas = unlist(Ca_outputs)
 
-# put the outputs in the same df as the parameters
-param_outputs <- parm |>
+# Put the outputs in the same df as the parameters
+param_outputs <- parm %>%
   mutate(output = Cas)
 ```
 
+c) Plot conductance estimates in a way that accounts for parameter uncertainty\
+
+```{r, warning = FALSE}
+# Plot predicted Ca for each parameter combo
+ggplot(param_outputs, aes(x = output)) +
+  geom_density(color = "navy", 
+               size = 1.5, 
+               fill = "lightblue") +
+  theme_minimal() +
+  labs(x = "Conductance (mm/s)", 
+       y = "Density", 
+       title = "Ca Model Conductance (mm/s)")
+
+# Plot cumulative distribution
+ggplot(param_outputs, aes(x = output)) +
+  stat_ecdf(color = "navy", 
+            size = 1.5) +
+  theme_minimal() +
+  labs(x = "Conductance (mm/s)", 
+       y = "Cumulative Probability", 
+       title = "Ca Model Output (Conductance (mm/s)) Cumulative Probability")
+```
+
+d) Plot conductance estimates against each of your parameters\
+
 ```{r}
-
-# plot predicted Ca for each parameter combo
-ggplot(param_outputs, aes(x = output)) +
-  geom_density(color = "navy", size = 1.5, fill = "lightblue") +
-  theme_minimal() +
-  labs(x = "Conductance (mm/s)", y = "Density", title = "Ca Model Conductance (mm/s)")
-
-# cumulative distribution
-ggplot(param_outputs, aes(x = output)) +
-  stat_ecdf(color = "navy", size = 1.5) +
-  theme_minimal() +
-  labs(x = "Conductance (mm/s)", y = "Cumulative Probability", title = "Ca Model Output (Conductance (mm/s)) Cumulative Probability")
-
-# make a df for the outputs pivot longer for graphs
+# Make a df for the outputs pivoted longer for graphs
 df_long <- param_outputs %>% 
   pivot_longer(cols = v:k_d, names_to = "parm", values_to = "value")
 
 # Create plots for parameters effect on output
 ggplot(df_long, aes(x = value, y = output, col = parm)) +
   geom_point(size = 1.5) +
-  facet_wrap(~ parm, ncol = 2, scales = "free") +
+  facet_wrap(~parm, 
+             ncol = 2, 
+             scales = "free") +
   theme_minimal() +
-  labs(x = "Parameter", y = "Conductance (mm/s)", color = "Parameter", title = "Ca Model Output (Conductance (mm/s)) by Parameter")
+  labs(x = "Parameter", 
+       y = "Conductance (mm/s)", 
+       color = "Parameter", 
+       title = "Ca Model Output (Conductance (mm/s)) by Parameter")
 ```
+
+e) Estimate the Partial Rank Correlation Coefficients\
 
 ```{r}
-# calculate partial correlations
+# Calculate partial correlations
 partial_correlation = pcc(parm, param_outputs$output, rank = TRUE)
 
+# Display values
+partial_correlation
+
+# Plot them
 plot(partial_correlation)
 ```
+
+f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about what you should focus on if you want to reduce uncertainty in aerodynamic conductance estimates? Does this tell you anything about the sensitivity of plant water use to climate change?\
+\
+
+**Answer: We suggest to reduce uncertainty that we look at wind speed and height, as they are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot. Since wind speed and height seem to be most sensitive to change, uncertainty in these parameters may be more likely to create an underestimate or overestimate of plant water use under climate change.**
 
 \
