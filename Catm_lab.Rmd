@@ -156,6 +156,19 @@ plot(partial_correlation)
 f) Discuss what your results tell you about how aerodynamic conductance? What does it suggest about what you should focus on if you want to reduce uncertainty in aerodynamic conductance estimates? Does this tell you anything about the sensitivity of plant water use to climate change?\
 \
 
-**Answer: We suggest to reduce uncertainty that we look at wind speed and height, as they are the two most important values and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and in the obvious positive correlations seen in the output by parameter plot. Since wind speed and height seem to be most sensitive to change, uncertainty in these parameters may be more likely to create an underestimate or overestimate of plant water use under climate change.**
+**Answer:** 
+
+**Overview**
+
+We suggest to reduce uncertainty that we look at wind speed (v) especially and also potentially height, as our results indicate that they are the two most important values to aerodynamic conductance and are most sensitive to change. This can be seen in the partial correlation graph which shows them as the highest values and clearly for wind speed in the positive correlation seen in the output by parameter plot. To summarize, since wind speed and height seem to be most sensitive to change, uncertainty in these parameters may be more likely to create an underestimate or overestimate of aerodynamic conductance, so focusing on these and ensuring accurate measurements for these are key. In general, if conductance is higher, then evapotranspiration increases which means more water use: if climate change causes windier conditions, for example, there could be greater plant water use (instability of wind conditions could impact water use).
+
+**Further Discussion**
+
+Looking at the results of our “Ca Model Output (Conductance (mm/s)) by Parameter” graph outputs we can see the different relationships conductance has on our parameters: height, k_d, k_o, and v. There does not seem to be a clear or strong relationship between conductance against height, k_d, & k_o. However, our graph suggests that there is a positive correlation between conductance and v. This suggests that the parameter v, being studied is an important factor in determining conductance. In conclusion, the results of the graphs suggest that it is important to consider multiple factors when estimating aerodynamic conductance.
+
+To reduce uncertainty in aerodynamic conductance estimates, it may be necessary to consider multiple factors that influence conductance, such as vegetation structure, atmospheric conditions, and environmental factors. It may also be necessary to use more detailed models that account for the complexity of the relationship between these factors and conductance. Additionally, it may be important to collect more data to better understand the factors that influence conductance.
+
+The sensitivity of plant water use to climate change depends on many factors, including changes in temperature, rainfall, and atmospheric conditions. Looking at our graphs it may suggests that the factors that influence plant water use, they may not provide a complete picture of how plants will respond to changes in climate. It is important to consider other factors that may influence plant water use, such as changes in plant species, soil moisture, and nutrient availability, when assessing the sensitivity of plant water use to climate change.
+
 
 \
